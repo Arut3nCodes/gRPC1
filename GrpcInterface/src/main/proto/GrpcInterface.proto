@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_outer_classname = "GrpcAppProto";
+option objc_class_prefix = "GAP";
+
+message MyEmpty {}
+
+// The request message containing the user's name and age.
+message TheRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+// The response message containing the hello text message
+message TheResponse {
+  string message = 1;
+}
+
+message SaveDataRecordRequest {
+  int32 item_id = 1;
+  string name_of_product = 2;
+  double price = 3;
+  int32 number_of_items = 4;
+  string name_of_image = 5;
+}
+
+// Request message for reading data record
+message ReadDataRecordRequest {
+  int32 item_id = 1;
+}
+
+// Response message for reading data record
+message ReadDataRecordResponse {
+  int32 item_id = 1;
+  string name_of_product = 2;
+  double price = 3;
+  int32 number_of_items = 4;
+  string name_of_image = 5;
+}
+
+// Request message for searching records by value
+message SearchRecordsByValueRequest {
+  int32 value = 1;
+}
+
+// Response message for searching records by value
+message SearchRecordsByValueResponse {
+  repeated ReadDataRecordResponse records = 1;
+}
+
+// Request message for uploading image
+message UploadImageRequest {
+  bytes data = 1;
+}
+
+// Response message for uploading image
+message UploadImageResponse {
+  string filename = 1;
+}
+
+// Request message for downloading image
+message DownloadImageRequest {
+  string filename = 1;
+}
+
+// Response message for downloading image
+message DownloadImageResponse {
+  bytes data = 1;
+}
+
+// The service definition.
+service DataManagement {
+  // Remote procedures:
+  rpc SaveDataRecord (SaveDataRecordRequest) returns (ReadDataRecordResponse) {}
+  rpc ReadDataRecord (ReadDataRecordRequest) returns (ReadDataRecordResponse) {}
+  rpc ReadAllDataRecords (MyEmpty) returns (stream ReadDataRecordResponse) {}
+  rpc SearchRecordsByValue (SearchRecordsByValueRequest) returns (SearchRecordsByValueResponse) {}
+  rpc UploadImage (stream UploadImageRequest) returns (UploadImageResponse) {}
+  rpc DownloadImage (DownloadImageRequest) returns (stream DownloadImageResponse) {}
+}
