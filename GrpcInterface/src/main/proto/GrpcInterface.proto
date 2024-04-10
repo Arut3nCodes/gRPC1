@@ -52,6 +52,7 @@ message SearchRecordsByValueResponse {
 // Request message for uploading image
 message UploadImageRequest {
   bytes data = 1;
+  int32 id = 2;
 }
 
 // Response message for uploading image

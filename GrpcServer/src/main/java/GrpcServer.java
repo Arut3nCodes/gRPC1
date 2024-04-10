@@ -13,6 +13,7 @@ import java.util.UUID;
 public class GrpcServer {
 
     static ArrayList<Record> listOfRecords;
+    static int id;
 
     public static void main(String[] args) {
         int port = 50001;
@@ -42,6 +43,12 @@ public class GrpcServer {
                     .setNameOfImage(request.getNameOfImage())
                     .build();
 
+            for(Record record: listOfRecords){
+                if(record.getItemId() == newRecord.getItemId()) {
+                    listOfRecords.remove(record);
+                    break;
+                }
+            }
             listOfRecords.add(newRecord);
 
             ReadDataRecordResponse response = ReadDataRecordResponse.newBuilder()
@@ -77,7 +84,7 @@ public class GrpcServer {
         }
 
         @Override
-        public void readAllDataRecords(Empty request, StreamObserver<ReadDataRecordResponse> responseObserver) {
+        public void readAllDataRecords(MyEmpty request, StreamObserver<ReadDataRecordResponse> responseObserver) {
             System.out.println("Received readAllDataRecords request");
             for (Record record : listOfRecords) {
                 responseObserver.onNext(ReadDataRecordResponse.newBuilder()
@@ -121,6 +128,7 @@ public class GrpcServer {
                 public void onNext(UploadImageRequest request) {
                     try {
                         outputStream.write(request.getData().toByteArray());
+                        id = request.getId();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -134,7 +142,14 @@ public class GrpcServer {
                 @Override
                 public void onCompleted() {
                     String filename = UUID.randomUUID().toString() + ".jpg"; // Generating unique filename
-                    try (FileOutputStream fileOutputStream = new FileOutputStream("server_images/" + filename)) {
+                    String imagePath = "C:\\Users\\jakub\\IdeaProjects\\gRPC1\\GrpcServer\\src\\image\\"; // Path to the image directory
+                    for(Record record: listOfRecords){
+                        if(record.getItemId() == id) {
+                            record.setNameOfImage(filename);
+                            break;
+                        }
+                    }
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(imagePath + "/" + filename)) {
                         outputStream.writeTo(fileOutputStream);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -148,11 +163,12 @@ public class GrpcServer {
             };
         }
 
+
         @Override
         public void downloadImage(DownloadImageRequest request, StreamObserver<DownloadImageResponse> responseObserver) {
             System.out.println("Received downloadImage request");
             String filename = request.getFilename();
-            try (FileInputStream fileInputStream = new FileInputStream("server_images/" + filename)) {
+            try (FileInputStream fileInputStream = new FileInputStream("C:\\Users\\jakub\\IdeaProjects\\gRPC1\\GrpcServer\\src\\image\\" + filename)) {
                 byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = fileInputStream.read(buffer)) != -1) {
